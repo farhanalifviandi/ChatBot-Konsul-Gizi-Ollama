@@ -1,0 +1,1537 @@
+import requests
+from flask import Flask, render_template, request, jsonify
+
+app = Flask(__name__)
+
+# Fungsi untuk mendapatkan respons dari Ollama model
+def generate_response(user_input):
+    try:
+        # Kirim permintaan ke server Ollama
+        response = requests.post(
+            "http://localhost:11434/api/generate",  # Ollama berjalan di port ini
+            json={
+                "model": "llama3.1",  # Model Ollama
+                "prompt": user_input
+            }
+        )
+        # Periksa status respons HTTP
+        response.raise_for_status()
+        
+        # Parsing JSON respons
+        json_response = response.json()
+        if "response" in json_response:
+            return json_response["response"]
+        else:
+            return "Maaf, model tidak memberikan respons yang valid."
+    except requests.exceptions.RequestException as e:
+        return f"Terjadi kesalahan saat menghubungi server Ollama: {e}"
+
+# Halaman utama untuk chatbot
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Endpoint untuk menangani pertanyaan pengguna
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json['question']  # Ubah form ke json
+    response = generate_response(user_input)
+    return jsonify({'response': response})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------
+
+
+
+
+import requests
+from flask import Flask, render_template, request, jsonify
+
+app = Flask(__name__)
+
+# Fungsi untuk mendapatkan respons dari Ollama model
+def generate_response(user_input):
+    try:
+        # Kirim permintaan ke server Ollama
+        response = requests.post(
+            "http://localhost:11434/api/generate",  # Ollama berjalan di port ini
+            json={
+                "model": "llama3.1",  # Model Ollama
+                "prompt": user_input
+            }
+        )
+        # Periksa status respons HTTP
+        response.raise_for_status()
+        
+        # Log isi respons untuk debugging
+        print("Raw response text:", response.text)
+        
+        # Parsing JSON respons
+        try:
+            json_response = response.json()
+            if "response" in json_response:
+                return json_response["response"]
+            else:
+                return "Maaf, model tidak memberikan respons yang valid."
+        except ValueError:
+            # Jika respons bukan JSON valid
+            return "Terjadi kesalahan: Server memberikan respons yang tidak dapat diproses."
+    except requests.exceptions.RequestException as e:
+        return f"Terjadi kesalahan saat menghubungi server Ollama: {e}"
+
+# Halaman utama untuk chatbot
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Endpoint untuk menangani pertanyaan pengguna
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json['question']  # Ubah form ke json
+    response = generate_response(user_input)
+    return jsonify({'response': response})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+import requests
+from flask import Flask, render_template, request, jsonify
+
+app = Flask(__name__)
+
+# Fungsi untuk mendapatkan respons dari Ollama model
+def generate_response(user_input):
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": "llama3.1",
+                "prompt": user_input
+            }
+        )
+        response.raise_for_status()
+        
+        # Log isi respons mentah untuk debugging
+        print("Raw response text:", response.text)
+        
+        # Parsing JSON respons
+        try:
+            json_response = response.json()
+            if "response" in json_response:
+                return json_response["response"]
+            else:
+                return "Maaf, model tidak memberikan respons yang valid."
+        except ValueError:
+            return f"Terjadi kesalahan: Server memberikan respons yang tidak dapat diproses.\nRespons mentah: {response.text}"
+    except requests.exceptions.RequestException as e:
+        return f"Terjadi kesalahan saat menghubungi server Ollama: {e}"
+
+# Halaman utama untuk chatbot
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Endpoint untuk menangani pertanyaan pengguna
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json['question']  # Ubah form ke json
+    response = generate_response(user_input)
+    return jsonify({'response': response})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Kesehatan Gizi</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #05113b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #13254c;
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .title {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #0b1a3c;
+            border-radius: 15px;
+        }
+
+        .title h1 {
+            margin-left: 10px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .chat-box {
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #0b1a3c;
+            border-radius: 15px;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .button {
+            margin-left: 10px;
+            padding: 8px 20px;
+            border: none;
+            background-color: #4acfee;
+            color: black;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .response-box {
+            padding: 10px;
+            background-color: #8bc34a;  /* Hijau yang menenangkan */
+            color: white;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .message {
+            display: flex;
+            margin: 10px 0;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .message.user .message-content {
+            background-color: #4acfee;
+            color: black;
+        }
+
+        .message.bot .message-content {
+            background-color: #1c3a60;
+            color: white;
+        }
+
+        .bot-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <img src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon" class="bot-icon">
+            <h1>Chatbot Kesehatan Gizi</h1>
+        </div>
+        
+        <div class="chat-box" id="content-box">
+            <!-- Pesan akan ditambahkan -->
+        </div>
+
+        <div class="input-container" id="input-container">
+            <input type="text" id="user-input" placeholder="Tulis pertanyaan Anda seputar Kesehatan Gizi...">
+            <button class="button" onclick="sendMessage()">Kirim</button>
+        </div>
+
+        <!-- Response box yang diubah agar berwarna hijau -->
+        <div class="response-box" id="response-box" style="display: none;">
+            <strong>Response:</strong> <span id="response-text"></span>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            const contentBox = document.getElementById('content-box');
+            
+            // Kirim permintaan ke server Flask
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: userInput })
+            });
+            
+            // Ambil respon dari server
+            const data = await response.json();
+
+            // Tambahkan pesan pengguna ke tampilan
+            contentBox.innerHTML += `<div class="message user"><div class="message-content">${userInput}</div></div>`;
+
+            // Tambahkan pesan bot ke tampilan dengan warna 
+            contentBox.innerHTML += `<div class="message bot"><img class="bot-icon" src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon"><div class="message-content" style="background-color: #8bc34a; color: white;">${data.response}</div></div>`;
+
+            // Scroll ke bawah untuk menunjukkan pesan terbaru
+            contentBox.scrollTop = contentBox.scrollHeight;
+
+            // Kosongkan input setelah mengirim pesan
+            document.getElementById('user-input').value = '';
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------
+FIXING
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import requests
+from flask import Flask, render_template, request, jsonify
+
+app = Flask(__name__)
+
+# Fungsi untuk mendapatkan respons dari Ollama model
+def generate_response(user_input):
+    try:
+        # Kirim permintaan ke server Ollama
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": "llama3.1",
+                "prompt": user_input
+            },
+            stream=True  # Gunakan streaming
+        )
+        response.raise_for_status()
+        
+        # Inisialisasi variabel untuk menyimpan hasil
+        full_response = ""
+
+        # Iterasi setiap baris dalam stream JSON
+        for line in response.iter_lines():
+            if line:
+                try:
+                    # Decode baris JSON
+                    json_line = requests.utils.json.loads(line)
+                    if "response" in json_line:
+                        full_response += json_line["response"]
+                except ValueError as e:
+                    return f"Terjadi kesalahan dalam parsing JSON: {e}"
+        
+        # Return respons sebagai teks biasa
+        return full_response if full_response else "Tidak ada respons yang diterima dari server Ollama."
+    except requests.exceptions.RequestException as e:
+        return f"Terjadi kesalahan saat menghubungi server Ollama: {e}"
+
+# Halaman utama untuk chatbot
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Endpoint untuk menangani pertanyaan pengguna
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json['question']  # Ambil pertanyaan pengguna dari JSON request
+    response = generate_response(user_input)  # Dapatkan respons dari Ollama
+    return jsonify({"response": response})  # Kembalikan respons dalam format JSON
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------
+DEBUGGING BERHASIL 50%
+
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify, render_template
+import requests
+import json
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"response": "Pertanyaan kosong, silakan masukkan pertanyaan."}), 400
+
+    # Kirim permintaan ke API Ollama
+    ollama_url = "http://localhost:11434/api/generate"
+    payload = {"model": "llama3.1", "prompt": user_input}
+
+    try:
+        response = requests.post(ollama_url, json=payload)
+        
+        # Menangani format NDJSON
+        bot_response = []
+        for line in response.iter_lines():
+            if line:
+                try:
+                    # Parsing setiap baris JSON
+                    response_data = json.loads(line.decode('utf-8'))
+                    # Ambil hanya bagian response
+                    if 'response' in response_data:
+                        bot_response.append(response_data['response'])
+                except json.JSONDecodeError:
+                    bot_response.append("Maaf, terjadi kesalahan dalam parsing data.")
+        
+        # Gabungkan seluruh respons menjadi satu string
+        bot_response = " ".join(bot_response)
+
+        if not bot_response:
+            bot_response = "Tidak ada respons yang diterima dari API."
+        
+    except requests.RequestException as e:
+        bot_response = f"Terjadi kesalahan saat menghubungi API: {str(e)}"
+
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------
+DEBUGGING BERHASIL 60%
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify, render_template
+import requests
+import json
+
+app = Flask(__name__)
+
+# Fungsi untuk memeriksa apakah pertanyaan terkait dengan kesehatan gizi
+def is_health_related(query):
+    health_keywords = ['gizi', 'nutrisi', 'kesehatan', 'makanan', 'vitamin', 'protein', 'mineral', 'serat']
+    return any(keyword in query.lower() for keyword in health_keywords)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"response": "Pertanyaan kosong, silakan masukkan pertanyaan."}), 400
+
+    # Periksa apakah pertanyaan terkait dengan kesehatan gizi
+    if not is_health_related(user_input):
+        return jsonify({"response": "Maaf, saya hanya dapat menjawab pertanyaan tentang kesehatan gizi."}), 400
+
+    # Kirim permintaan ke API Ollama jika pertanyaan terkait kesehatan gizi
+    ollama_url = "http://localhost:11434/api/generate"
+    payload = {"model": "llama3.2", "prompt": user_input}
+
+    try:
+        response = requests.post(ollama_url, json=payload)
+        
+        # Menangani format NDJSON dan menggabungkan respons
+        bot_response = []
+        for line in response.iter_lines():
+            if line:
+                try:
+                    # Parsing setiap baris JSON
+                    response_data = json.loads(line.decode('utf-8'))
+                    if 'response' in response_data:
+                        bot_response.append(response_data['response'])
+                except json.JSONDecodeError:
+                    bot_response.append("Maaf, terjadi kesalahan dalam parsing data.")
+        
+        # Gabungkan seluruh respons menjadi satu string
+        bot_response = " ".join(bot_response)
+
+        if not bot_response:
+            bot_response = "Tidak ada respons yang diterima dari API."
+        
+    except requests.RequestException as e:
+        bot_response = f"Terjadi kesalahan saat menghubungi API: {str(e)}"
+
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+----------------------------------
+DEBUGGING BERHASIL 65%
+
+
+
+
+
+from flask import Flask, request, jsonify, render_template
+import requests
+import json
+
+app = Flask(__name__)
+
+# Fungsi untuk memeriksa apakah pertanyaan terkait dengan kesehatan gizi
+def is_health_related(query):
+    # Daftar kata kunci yang lebih lengkap terkait dengan kesehatan gizi
+    health_keywords = [
+        'gizi', 'nutrisi', 'kesehatan', 'makanan', 'vitamin', 'protein', 
+        'mineral', 'serat', 'diet', 'keseimbangan', 'kalori', 'karbohidrat', 
+        'lemak', 'mikronutrien', 'makronutrien', 'olahraga', 'sehat'
+    ]
+    return any(keyword in query.lower() for keyword in health_keywords)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"response": "Pertanyaan kosong, silakan masukkan pertanyaan."}), 400
+
+    # Periksa apakah pertanyaan terkait dengan kesehatan gizi
+    if not is_health_related(user_input):
+        return jsonify({"response": "Maaf, saya hanya dapat menjawab pertanyaan tentang kesehatan gizi."}), 400
+
+    # Kirim permintaan ke API Ollama jika pertanyaan terkait kesehatan gizi
+    ollama_url = "http://localhost:11434/api/generate"
+    payload = {"model": "llama3.2", "prompt": user_input}
+
+    try:
+        response = requests.post(ollama_url, json=payload)
+        
+        # Menangani format NDJSON dan menggabungkan respons
+        bot_response = []
+        for line in response.iter_lines():
+            if line:
+                try:
+                    # Parsing setiap baris JSON
+                    response_data = json.loads(line.decode('utf-8'))
+                    if 'response' in response_data:
+                        bot_response.append(response_data['response'])
+                except json.JSONDecodeError:
+                    bot_response.append("Maaf, terjadi kesalahan dalam parsing data.")
+        
+        # Gabungkan seluruh respons menjadi satu string
+        bot_response = " ".join(bot_response)
+
+        if not bot_response:
+            bot_response = "Tidak ada respons yang diterima dari API."
+        
+    except requests.RequestException as e:
+        bot_response = f"Terjadi kesalahan saat menghubungi API: {str(e)}"
+
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+--------------------------------
+DEBUGGING BERHASIL 70%
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify, render_template
+import requests
+import json
+
+app = Flask(__name__)
+
+# Fungsi untuk memeriksa apakah pertanyaan terkait dengan kesehatan gizi
+def is_health_related(query):
+    # Daftar kata kunci yang lebih lengkap terkait dengan kesehatan gizi
+    health_keywords = [
+        'gizi', 'nutrisi', 'kesehatan', 'makanan', 'vitamin', 'protein', 
+        'mineral', 'serat', 'diet', 'keseimbangan', 'kalori', 'karbohidrat', 
+        'lemak', 'mikronutrien', 'makronutrien', 'olahraga', 'sehat'
+    ]
+    return any(keyword in query.lower() for keyword in health_keywords)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"response": "Pertanyaan kosong, silakan masukkan pertanyaan."}), 400
+
+    # Periksa apakah pertanyaan terkait dengan kesehatan gizi
+    if not is_health_related(user_input):
+        return jsonify({"response": "Maaf, saya hanya dapat menjawab pertanyaan tentang kesehatan gizi."}), 400
+
+    # Kirim permintaan ke API Ollama jika pertanyaan terkait kesehatan gizi
+    ollama_url = "http://localhost:11434/api/generate"
+    payload = {"model": "llama3.2", "prompt": user_input}
+
+    try:
+        response = requests.post(ollama_url, json=payload)
+        
+        # Menangani format NDJSON dan menggabungkan respons
+        bot_response = []
+        for line in response.iter_lines():
+            if line:
+                try:
+                    # Parsing setiap baris JSON
+                    response_data = json.loads(line.decode('utf-8'))
+                    if 'response' in response_data:
+                        bot_response.append(response_data['response'])
+                except json.JSONDecodeError:
+                    bot_response.append("Maaf, terjadi kesalahan dalam parsing data.")
+        
+        # Gabungkan seluruh respons menjadi satu string
+        bot_response = " ".join(bot_response)
+
+        if not bot_response:
+            bot_response = "Tidak ada respons yang diterima dari API."
+        
+    except requests.RequestException as e:
+        bot_response = f"Terjadi kesalahan saat menghubungi API: {str(e)}"
+
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------
+DEBUGGING BERHASIL 80%
+
+
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify, render_template
+import requests
+import json
+import re
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"response": "Pertanyaan kosong, silakan masukkan pertanyaan."}), 400
+
+    # Memastikan hanya pertanyaan terkait kesehatan gizi yang diterima
+    kesehatan_gizi_keywords = [
+        "gizi", "nutrisi", "makanan", "diet", "protein", "sayuran", "buah", "vitamin", "serat"
+    ]
+    
+    # Memeriksa apakah pertanyaan mengandung kata kunci terkait kesehatan gizi
+    if not any(keyword in user_input.lower() for keyword in kesehatan_gizi_keywords):
+        return jsonify({"response": "Maaf, saya hanya dapat menjawab pertanyaan terkait kesehatan gizi."}), 400
+
+    # Kirim permintaan ke API Ollama
+    ollama_url = "http://localhost:11434/api/generate"
+    payload = {"model": "llama3.2", "prompt": user_input}
+
+    try:
+        response = requests.post(ollama_url, json=payload)
+        
+        # Menangani format NDJSON
+        bot_response = []
+        for line in response.iter_lines():
+            if line:
+                try:
+                    # Parsing setiap baris JSON
+                    response_data = json.loads(line.decode('utf-8'))
+                    # Ambil hanya bagian response
+                    if 'response' in response_data:
+                        bot_response.append(response_data['response'])
+                except json.JSONDecodeError:
+                    bot_response.append("Maaf, terjadi kesalahan dalam parsing data.")
+        
+        # Gabungkan seluruh respons menjadi satu string
+        bot_response = " ".join(bot_response)
+
+        # Memperbaiki hasil agar lebih rapi dan mudah dibaca
+        bot_response = re.sub(r'[^A-Za-z0-9\s.,-]', '', bot_response)  # Menghapus karakter yang tidak diinginkan
+        bot_response = re.sub(r'\s+', ' ', bot_response).strip()  # Menghapus spasi berlebih
+
+        if not bot_response:
+            bot_response = "Tidak ada respons yang diterima dari API."
+        
+    except requests.RequestException as e:
+        bot_response = f"Terjadi kesalahan saat menghubungi API: {str(e)}"
+
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------
+DEBUGGING BERHASIL 85%
+
+
+
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify, render_template
+import requests
+import json
+import re
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"response": "Pertanyaan kosong, silakan masukkan pertanyaan."}), 400
+
+    # Memastikan hanya pertanyaan terkait kesehatan gizi yang diterima
+    kesehatan_gizi_keywords = [
+        "gizi", "nutrisi", "makanan", "diet", "protein", "sayuran", "buah", "vitamin", "serat", 'kesehatan', 'makanan',
+        'mineral', 'keseimbangan', 'kalori', 'karbohidrat', 
+        'lemak', 'mikronutrien', 'makronutrien', 'olahraga', 'sehat'
+    ]
+    
+    # Memeriksa apakah pertanyaan mengandung kata kunci terkait kesehatan gizi
+    if not any(keyword in user_input.lower() for keyword in kesehatan_gizi_keywords):
+        return jsonify({"response": "Maaf, saya hanya dapat menjawab pertanyaan terkait kesehatan gizi."}), 400
+
+    # Kirim permintaan ke API Ollama
+    ollama_url = "http://localhost:11434/api/generate"
+    payload = {"model": "llama3.2", "prompt": user_input}
+
+    try:
+        response = requests.post(ollama_url, json=payload)
+        
+        # Menangani format NDJSON
+        bot_response = []
+        for line in response.iter_lines():
+            if line:
+                try:
+                    # Parsing setiap baris JSON
+                    response_data = json.loads(line.decode('utf-8'))
+                    # Ambil hanya bagian response
+                    if 'response' in response_data:
+                        bot_response.append(response_data['response'])
+                except json.JSONDecodeError:
+                    bot_response.append("Maaf, terjadi kesalahan dalam parsing data.")
+        
+        # Gabungkan seluruh respons menjadi satu string
+        bot_response = " ".join(bot_response)
+
+        # Memperbaiki hasil agar lebih rapi dan mudah dibaca
+        bot_response = re.sub(r'[^A-Za-z0-9\s.,-]', '', bot_response)  # Menghapus karakter yang tidak diinginkan
+        bot_response = re.sub(r'\s+', ' ', bot_response).strip()  # Menghapus spasi berlebih
+
+        # Format kalimat menjadi lebih rapi
+        bot_response = bot_response.replace("1.", "\n1.").replace("2.", "\n2.").replace("3.", "\n3.").replace("4.", "\n4.").replace("5.", "\n5.").replace("6.", "\n6.").replace("7.", "\n7.").replace("8.", "\n8.").replace("9.", "\n9.").replace("10.", "\n10.")
+        
+        if not bot_response:
+            bot_response = "Tidak ada respons yang diterima dari API."
+        
+    except requests.RequestException as e:
+        bot_response = f"Terjadi kesalahan saat menghubungi API: {str(e)}"
+
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------
+DEBUGGING BERHASIL 85% LANJUTAN
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify, render_template
+import requests
+import json
+import re
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"response": "Pertanyaan kosong, silakan masukkan pertanyaan."}), 400
+
+    # Memastikan hanya pertanyaan terkait kesehatan gizi yang diterima
+    kesehatan_gizi_keywords = [
+        "gizi", "nutrisi", "makanan", "diet", "protein", "sayuran", "buah", "vitamin", "serat", 
+        "kesehatan", "mineral", "keseimbangan", "kalori", "karbohidrat", "lemak", "mikronutrien", 
+        "makronutrien", "olahraga", "sehat", "asupan", "metabolisme", "diabetes", "obesitas", 
+        "kolesterol", "tekanan darah", "suplemen", "hidrasi", "antioxidant", "prebiotik", 
+        "probiotik", "vegetarian", "vegan", "pola makan", "energi", "pengolahan makanan", 
+        "makanan organik", "makanan sehat", "menu diet", "perencanaan makanan", "makanan berimbang", 
+        "kebutuhan kalori", "indeks glikemik", "indeks massa tubuh", "BMI", "bahan makanan alami", 
+        "makanan rendah lemak", "makanan kaya protein", "porsi makan", "makanan rendah gula", 
+        "makanan berserat", "diet rendah karbohidrat", "makanan super", "makanan fungsional", 
+        "makanan rendah garam", "makanan fermentasi", "hipertensi", "anemia", "penuaan sehat", 
+        "kondisi medis", "kesehatan jantung", "diet untuk ibu hamil", "diet untuk anak-anak", 
+        "penurunan berat badan", "pengelolaan berat badan", "peningkatan massa otot", "diet seimbang"
+    ]
+    
+    # Memeriksa apakah pertanyaan mengandung kata kunci terkait kesehatan gizi
+    if not any(keyword in user_input.lower() for keyword in kesehatan_gizi_keywords):
+        return jsonify({"response": "Maaf, saya hanya dapat menjawab pertanyaan terkait kesehatan gizi."}), 400
+
+    # Kirim permintaan ke API Ollama
+    ollama_url = "http://localhost:11434/api/generate"
+    payload = {"model": "llama3.2", "prompt": user_input}
+
+    try:
+        response = requests.post(ollama_url, json=payload)
+        
+        # Menangani format NDJSON
+        bot_response = []
+        for line in response.iter_lines():
+            if line:
+                try:
+                    # Parsing setiap baris JSON
+                    response_data = json.loads(line.decode('utf-8'))
+                    # Ambil hanya bagian response
+                    if 'response' in response_data:
+                        bot_response.append(response_data['response'])
+                except json.JSONDecodeError:
+                    bot_response.append("Maaf, terjadi kesalahan dalam parsing data.")
+        
+        # Gabungkan seluruh respons menjadi satu string
+        bot_response = " ".join(bot_response)
+
+        # Memperbaiki hasil agar lebih rapi dan mudah dibaca
+        bot_response = re.sub(r'[^A-Za-z0-9\s.,-]', '', bot_response)  # Menghapus karakter yang tidak diinginkan
+        bot_response = re.sub(r'\s+', ' ', bot_response).strip()  # Menghapus spasi berlebih
+
+        # Format kalimat menjadi lebih rapi
+        bot_response = bot_response.replace("1.", "\n1.").replace("2.", "\n2.").replace("3.", "\n3.").replace("4.", "\n4.").replace("5.", "\n5.").replace("6.", "\n6.").replace("7.", "\n7.").replace("8.", "\n8.").replace("9.", "\n9.").replace("10.", "\n10.")
+        
+        if not bot_response:
+            bot_response = "Tidak ada respons yang diterima dari API."
+        
+    except requests.RequestException as e:
+        bot_response = f"Terjadi kesalahan saat menghubungi API: {str(e)}"
+
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------
+DEBUGGING BERHASIL 90%
+
+
+
+
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify, render_template
+import requests
+import json
+import re
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"response": "Pertanyaan kosong, silakan masukkan pertanyaan."}), 400
+
+    # Memastikan hanya pertanyaan terkait kesehatan gizi yang diterima
+    kesehatan_gizi_keywords = [
+        "gizi", "nutrisi", "makanan", "diet", "protein", "sayuran", "buah", "vitamin", "serat", 
+        "kesehatan", "mineral", "keseimbangan", "kalori", "karbohidrat", "lemak", "mikronutrien", 
+        "makronutrien", "olahraga", "sehat", "asupan", "metabolisme", "diabetes", "obesitas", 
+        "kolesterol", "tekanan darah", "suplemen", "hidrasi", "antioxidant", "prebiotik", 
+        "probiotik", "vegetarian", "vegan", "pola makan", "energi", "pengolahan makanan", 
+        "makanan organik", "makanan sehat", "menu diet", "perencanaan makanan", "makanan berimbang", 
+        "kebutuhan kalori", "indeks glikemik", "indeks massa tubuh", "BMI", "bahan makanan alami", 
+        "makanan rendah lemak", "makanan kaya protein", "porsi makan", "makanan rendah gula", 
+        "makanan berserat", "diet rendah karbohidrat", "makanan super", "makanan fungsional", 
+        "makanan rendah garam", "makanan fermentasi", "hipertensi", "anemia", "penuaan sehat", 
+        "kondisi medis", "kesehatan jantung", "diet untuk ibu hamil", "diet untuk anak-anak", 
+        "penurunan berat badan", "pengelolaan berat badan", "peningkatan massa otot", "diet seimbang", "sakit"
+    ]
+    
+    # Memeriksa apakah pertanyaan mengandung kata kunci terkait kesehatan gizi
+    if not any(keyword in user_input.lower() for keyword in kesehatan_gizi_keywords):
+        return jsonify({"response": "Maaf, saya hanya dapat menjawab pertanyaan terkait kesehatan gizi."}), 400
+
+    # Kirim permintaan ke API Ollama
+    ollama_url = "http://localhost:11434/api/generate"
+    payload = {"model": "llama3.2", "prompt": user_input}
+
+    try:
+        response = requests.post(ollama_url, json=payload)
+        
+        # Menangani format NDJSON
+        bot_response = []
+        for line in response.iter_lines():
+            if line:
+                try:
+                    # Parsing setiap baris JSON
+                    response_data = json.loads(line.decode('utf-8'))
+                    # Ambil hanya bagian response
+                    if 'response' in response_data:
+                        bot_response.append(response_data['response'])
+                except json.JSONDecodeError:
+                    bot_response.append("Maaf, terjadi kesalahan dalam parsing data.")
+        
+        # Gabungkan seluruh respons menjadi satu string
+        bot_response = " ".join(bot_response)
+
+        # Memperbaiki hasil agar lebih rapi dan mudah dibaca
+        bot_response = re.sub(r'[^A-Za-z0-9\s.,-]', '', bot_response)  # Menghapus karakter yang tidak diinginkan
+        bot_response = re.sub(r'\s+', ' ', bot_response).strip()  # Menghapus spasi berlebih
+
+        # Memecah kalimat menjadi paragraf yang lebih terstruktur
+        bot_response = re.sub(r'([.!?])', r'\1\n', bot_response)  # Tambahkan baris baru setelah titik, tanda seru, atau tanda tanya
+
+        # Menambahkan paragraf baru jika diperlukan
+        bot_response = re.sub(r'\n+', '\n\n', bot_response)  # Memastikan ada jarak antara paragraf
+
+        if not bot_response:
+            bot_response = "Tidak ada respons yang diterima dari API."
+        
+    except requests.RequestException as e:
+        bot_response = f"Terjadi kesalahan saat menghubungi API: {str(e)}"
+
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+-------------------------------------------------
+DEBUGGING BERHASIL LANJUTAN 90%
+
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+import requests
+import json
+import re
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_mysqldb import MySQL
+
+app = Flask(__name__)
+
+# Konfigurasi MySQL
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'  # Ganti dengan username MySQL Anda
+app.config['MYSQL_PASSWORD'] = ''  # Ganti dengan password MySQL Anda
+app.config['MYSQL_DB'] = 'konsul_gizi'
+app.secret_key = '771d82a8f322c86e604e7accf3bc952d396902320ab20d65'  # Ganti dengan secret key untuk sesi
+
+mysql = MySQL(app)
+
+# Halaman utama setelah login
+@app.route('/')
+def home():
+    if 'user_id' in session:
+        return render_template('index.html')
+    return redirect(url_for('login'))
+
+# Halaman login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Cek username dan password di database
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM users WHERE username = %s", [username])
+        user = cur.fetchone()
+        cur.close()
+
+        if user and check_password_hash(user[2], password):
+            session['user_id'] = user[0]  # Menyimpan ID user dalam sesi
+            return redirect(url_for('home'))
+        else:
+            return render_template('login.html', message="Username atau password salah.")
+    
+    return render_template('login.html')
+
+# Halaman register
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+        # Menyimpan data pengguna baru
+        cur = mysql.connection.cursor()
+        cur.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
+        mysql.connection.commit()
+        cur.close()
+
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+# Halaman logout
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('login'))
+
+# Endpoint untuk pertanyaan kesehatan gizi
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"response": "Pertanyaan kosong, silakan masukkan pertanyaan."}), 400
+
+    # Memastikan hanya pertanyaan terkait kesehatan gizi yang diterima
+    kesehatan_gizi_keywords = [
+        "gizi", "nutrisi", "makanan", "diet", "protein", "sayuran", "buah", "vitamin", "serat", 
+        "kesehatan", "mineral", "keseimbangan", "kalori", "karbohidrat", "lemak", "mikronutrien", 
+        "makronutrien", "olahraga", "sehat", "asupan", "metabolisme", "diabetes", "obesitas", 
+        "kolesterol", "tekanan darah", "suplemen", "hidrasi", "antioxidant", "prebiotik", 
+        "probiotik", "vegetarian", "vegan", "pola makan", "energi", "pengolahan makanan", 
+        "makanan organik", "makanan sehat", "menu diet", "perencanaan makanan", "makanan berimbang", 
+        "kebutuhan kalori", "indeks glikemik", "indeks massa tubuh", "BMI", "bahan makanan alami", 
+        "makanan rendah lemak", "makanan kaya protein", "porsi makan", "makanan rendah gula", 
+        "makanan berserat", "diet rendah karbohidrat", "makanan super", "makanan fungsional", 
+        "makanan rendah garam", "makanan fermentasi", "hipertensi", "anemia", "penuaan sehat", 
+        "kondisi medis", "kesehatan jantung", "diet untuk ibu hamil", "diet untuk anak-anak", 
+        "penurunan berat badan", "pengelolaan berat badan", "peningkatan massa otot", "diet seimbang", "sakit", "terimakasih", "informasinya"
+    ]
+    
+    # Memeriksa apakah pertanyaan mengandung kata kunci terkait kesehatan gizi
+    if not any(keyword in user_input.lower() for keyword in kesehatan_gizi_keywords):
+        return jsonify({"response": "Maaf, saya hanya dapat menjawab pertanyaan terkait kesehatan gizi."}), 400
+
+    # Kirim permintaan ke API Ollama
+    ollama_url = "http://localhost:11434/api/generate"
+    payload = {"model": "llama3.2", "prompt": user_input}
+
+    try:
+        response = requests.post(ollama_url, json=payload)
+        
+        # Menangani format NDJSON
+        bot_response = []
+        for line in response.iter_lines():
+            if line:
+                try:
+                    # Parsing setiap baris JSON
+                    response_data = json.loads(line.decode('utf-8'))
+                    # Ambil hanya bagian response
+                    if 'response' in response_data:
+                        bot_response.append(response_data['response'])
+                except json.JSONDecodeError:
+                    bot_response.append("Maaf, terjadi kesalahan dalam parsing data.")
+        
+        # Gabungkan seluruh respons menjadi satu string
+        bot_response = " ".join(bot_response)
+
+        # Memperbaiki hasil agar lebih rapi dan mudah dibaca
+        bot_response = re.sub(r'[^A-Za-z0-9\s.,-]', '', bot_response)  # Menghapus karakter yang tidak diinginkan
+        bot_response = re.sub(r'\s+', ' ', bot_response).strip()  # Menghapus spasi berlebih
+
+        # Format kalimat menjadi lebih rapi
+        bot_response = bot_response.replace("1.", "\n1.").replace("2.", "\n2.").replace("3.", "\n3.").replace("4.", "\n4.").replace("5.", "\n5.").replace("6.", "\n6.").replace("7.", "\n7.").replace("8.", "\n8.").replace("9.", "\n9.").replace("10.", "\n10.")
+        
+        if not bot_response:
+            bot_response = "Tidak ada respons yang diterima dari API."
+        
+    except requests.RequestException as e:
+        bot_response = f"Terjadi kesalahan saat menghubungi API: {str(e)}"
+
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+------------------------------------
+DEBUGGING BERHASIL 95%
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+import requests
+import json
+import re
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_mysqldb import MySQL
+
+app = Flask(__name__)
+
+# Konfigurasi MySQL
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'  # Ganti dengan username MySQL Anda
+app.config['MYSQL_PASSWORD'] = ''  # Ganti dengan password MySQL Anda
+app.config['MYSQL_DB'] = 'konsul_gizi'
+app.secret_key = '771d82a8f322c86e604e7accf3bc952d396902320ab20d65'  # Ganti dengan secret key untuk sesi
+
+mysql = MySQL(app)
+
+# Halaman utama setelah login
+@app.route('/')
+def home():
+    if 'user_id' in session:
+        return render_template('index.html')
+    return redirect(url_for('login'))
+
+# Halaman login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM users WHERE username = %s", [username])
+        user = cur.fetchone()
+        cur.close()
+
+        if user and check_password_hash(user[2], password):
+            session['user_id'] = user[0]
+            return redirect(url_for('home'))
+        else:
+            return render_template('login.html', message="Username atau password salah.")
+    
+    return render_template('login.html')
+
+# Halaman register
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+        cur = mysql.connection.cursor()
+        cur.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
+        mysql.connection.commit()
+        cur.close()
+
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+# Halaman logout
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('login'))
+
+# Fungsi untuk menangani respons dari API
+def generate_completion(prompt):
+    ollama_url = "http://localhost:11434/api/generate"
+    payload = {"model": "llama3.2", "prompt": prompt}
+    headers = {"Content-Type": "application/json"}
+
+    response = requests.post(ollama_url, json=payload, headers=headers, stream=True)
+    full_response = ""
+    for line in response.iter_lines():
+        if line:
+            try:
+                response_part = json.loads(line.decode('utf-8'))['response']
+                full_response += response_part
+            except json.JSONDecodeError:
+                full_response += " (Kesalahan parsing respons)"
+
+    return full_response
+
+# Endpoint untuk pertanyaan kesehatan gizi
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"response": "Pertanyaan kosong, silakan masukkan pertanyaan."}), 400
+
+    kesehatan_gizi_keywords = [
+        "gizi", "nutrisi", "makanan", "diet", "protein", "sayuran", "buah", "vitamin", "serat", 
+        "kesehatan", "mineral", "keseimbangan", "kalori", "karbohidrat", "lemak", "mikronutrien", 
+        "makronutrien", "olahraga", "sehat", "asupan", "metabolisme", "diabetes", "obesitas", 
+        "kolesterol", "tekanan darah", "suplemen", "hidrasi", "antioxidant", "prebiotik", 
+        "probiotik", "vegetarian", "vegan", "pola makan", "energi", "pengolahan makanan", 
+        "makanan organik", "makanan sehat", "menu diet", "perencanaan makanan", "makanan berimbang", 
+        "kebutuhan kalori", "indeks glikemik", "indeks massa tubuh", "BMI", "bahan makanan alami", 
+        "makanan rendah lemak", "makanan kaya protein", "porsi makan", "makanan rendah gula", 
+        "makanan berserat", "diet rendah karbohidrat", "makanan super", "makanan fungsional", 
+        "makanan rendah garam", "makanan fermentasi", "hipertensi", "anemia", "penuaan sehat", 
+        "kondisi medis", "kesehatan jantung", "diet untuk ibu hamil", "diet untuk anak-anak", 
+        "penurunan berat badan", "pengelolaan berat badan", "peningkatan massa otot", "diet seimbang", "sakit", "terimakasih", "informasinya"
+    ]
+    
+    if not any(keyword in user_input.lower() for keyword in kesehatan_gizi_keywords):
+        return jsonify({"response": "Saya hanya dapat menjawab pertanyaan terkait kesehatan gizi."}), 400
+
+    # Dapatkan respons dari generate_completion
+    bot_response = generate_completion(user_input)
+
+    # Bersihkan dan format respons
+    bot_response = re.sub(r'[^A-Za-z0-9\s.,-]', '', bot_response)
+    bot_response = re.sub(r'\s+', ' ', bot_response).strip()
+
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------
+DEBUGGING BERHASIL

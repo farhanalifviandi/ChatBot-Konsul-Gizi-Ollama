@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Kesehatan Gizi</title>
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <img src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon" class="bot-icon">
+            <h1>Konsul Gizi</h1>
+        </div>
+        
+        <div class="chat-box" id="content-box">
+            <!-- Pesan akan ditambahkan -->
+        </div>
+    
+
+        <div class="input-container" id="input-container">
+            <input type="text" id="user-input" placeholder="Tulis pertanyaan Anda seputar Kesehatan Gizi...">
+            <button class="button" onclick="sendMessage()">Kirim</button>
+        </div>
+
+        <!-- Response box -->
+        <div class="response-box" id="response-box" style="display: none;">
+            <strong>Response:</strong> <span id="response-text"></span>
+        </div>
+    </div>
+
+    <script>
+        //
+        async function loadHistory() {
+            const contentBox = document.getElementById('content-box');
+            const response = await fetch('/history');
+            const data = await response.json();
+
+            if (Array.isArray(data)) {
+                contentBox.innerHTML = '';
+                data.forEach(chat => {
+                    contentBox.innerHTML += `
+                        <div class="message user"><div class="message-content">${chat.message}</div></div>
+                        <div class="message bot">
+                            <img class="bot-icon" src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon">
+                            <div class="message-content">${chat.response}</div>
+                        </div>
+                    `;
+                });
+                contentBox.scrollTop = contentBox.scrollHeight;
+            }
+        }      
+        //
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            const contentBox = document.getElementById('content-box');
+            
+            // Kirim permintaan ke server Flask
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: userInput })
+            });
+            
+            // Ambil respon dari server
+            const data = await response.json();
+
+            // Tambahkan pesan pengguna ke tampilan
+            contentBox.innerHTML += `<div class="message user"><div class="message-content">${userInput}</div></div>`;
+            
+            // Tambahkan pesan bot ke tampilan dengan warna 
+            contentBox.innerHTML += `<div class="message bot"><img class="bot-icon" src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon"><div class="message-content">${data.response}</div></div>`;
+
+            // Scroll ke bawah untuk menunjukkan pesan terbaru
+            contentBox.scrollTop = contentBox.scrollHeight;
+
+            // Kosongkan input setelah mengirim pesan
+            document.getElementById('user-input').value = '';
+        }
+        //
+        window.onload = loadHistory;
+    </script>
+    <a href="{{ url_for('logout') }}" class="button logout">Logout</a>
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Kesehatan Gizi</title>
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <img src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon" class="bot-icon">
+            <h1>Konsul Gizi</h1>
+        </div>
+        
+        <div class="chat-box" id="content-box">
+            <!-- Pesan akan ditambahkan -->
+        </div>
+
+        <div class="input-container" id="input-container">
+            <input type="text" id="user-input" placeholder="Tulis pertanyaan Anda seputar Kesehatan Gizi...">
+            <button class="button" onclick="sendMessage()">Kirim</button>
+        </div>
+
+        <!-- Response box -->
+        <div class="response-box" id="response-box" style="display: none;">
+            <strong>Response:</strong> <span id="response-text"></span>
+        </div>
+    </div>
+
+    <script>
+        async function loadHistory() {
+            const contentBox = document.getElementById('content-box');
+            const response = await fetch('/history');
+            const data = await response.json();
+
+            if (Array.isArray(data)) {
+                contentBox.innerHTML = '';
+                data.forEach(chat => {
+                    contentBox.innerHTML += `
+                        <div class="message user"><div class="message-content">${chat.message}</div></div>
+                        <div class="message bot">
+                            <img class="bot-icon" src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon">
+                            <div class="message-content">${chat.response}</div>
+                        </div>
+                    `;
+                });
+                contentBox.scrollTop = contentBox.scrollHeight;
+            }
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            const contentBox = document.getElementById('content-box');
+
+            // Tambahkan pesan pengguna ke tampilan
+            contentBox.innerHTML += `<div class="message user"><div class="message-content">${userInput}</div></div>`;
+
+            // Tambahkan placeholder untuk animasi typing
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('message', 'bot');
+            botMessage.innerHTML = `
+                <img class="bot-icon" src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon">
+                <div class="message-content typing-effect" id="bot-response"></div>
+            `;
+            contentBox.appendChild(botMessage);
+            contentBox.scrollTop = contentBox.scrollHeight;
+
+            // Kirim permintaan ke server Flask
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: userInput })
+            });
+
+            const data = await response.json();
+
+            // Ubah teks placeholder menjadi respons nyata
+            const botResponse = document.getElementById('bot-response');
+            botResponse.classList.remove('typing-effect');
+            botResponse.textContent = data.response;
+
+            // Kosongkan input setelah mengirim pesan
+            document.getElementById('user-input').value = '';
+        }
+
+        window.onload = loadHistory;
+    </script>
+    <a href="{{ url_for('logout') }}" class="button logout">Logout</a>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Kesehatan Gizi</title>
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <img src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon" class="bot-icon">
+            <h1>Konsul Gizi</h1>
+        </div>
+        
+        <div class="chat-box" id="content-box">
+            <!-- Pesan akan ditambahkan -->
+        </div>
+    
+        <div class="input-container" id="input-container">
+            <input type="text" id="user-input" placeholder="Tulis pertanyaan Anda seputar Kesehatan Gizi...">
+            <button class="button" onclick="sendMessage()">Kirim</button>
+        </div>
+
+        <a href="{{ url_for('logout') }}" class="button logout">Logout</a>
+    </div>
+
+    <script>
+        async function loadHistory() {
+            const contentBox = document.getElementById('content-box');
+            const response = await fetch('/history');
+            const data = await response.json();
+
+            if (Array.isArray(data)) {
+                contentBox.innerHTML = '';
+                data.forEach(chat => {
+                    contentBox.innerHTML += `
+                        <div class="message user">
+                            <div class="message-content">${chat.message}</div>
+                        </div>
+                        <div class="message bot">
+                            <img class="bot-icon" src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon">
+                            <div class="message-content">${chat.response}</div>
+                        </div>
+                    `;
+                });
+                contentBox.scrollTop = contentBox.scrollHeight;
+            }
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value.trim();
+            const contentBox = document.getElementById('content-box');
+
+            if (!userInput) return;
+
+            // Kirim permintaan ke server Flask
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ question: userInput }),
+            });
+
+            const data = await response.json();
+
+            contentBox.innerHTML += `<div class="message user">
+                <div class="message-content">${userInput}</div>
+            </div>`;
+            
+            contentBox.innerHTML += `<div class="message bot">
+                <img class="bot-icon" src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon">
+                <div class="message-content">${data.response || 'Maaf, bot tidak dapat merespons saat ini.'}</div>
+            </div>`;
+            
+            contentBox.scrollTop = contentBox.scrollHeight;
+            document.getElementById('user-input').value = '';
+        }
+
+        window.onload = loadHistory;
+    </script>
+</body>
+</html>

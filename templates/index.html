@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Kesehatan Gizi</title>
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <img src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon" class="bot-icon">
+            <h1>Konsul Gizi</h1>
+        </div>
+        
+        <div class="chat-box" id="content-box">
+            <!-- Pesan akan ditambahkan -->
+        </div>
+    
+        <div class="input-container" id="input-container">
+            <input type="text" id="user-input" placeholder="Tulis pertanyaan Anda seputar Kesehatan Gizi...">
+            <button class="button" onclick="sendMessage()">Kirim</button>
+        </div>
+
+        <!-- Response box -->
+        <div class="response-box" id="response-box" style="display: none;">
+            <strong>Response:</strong> <span id="response-text"></span>
+        </div>
+    </div>
+
+    <script>
+        async function loadHistory() {
+            const contentBox = document.getElementById('content-box');
+            const response = await fetch('/history');
+            const data = await response.json();
+
+            if (Array.isArray(data)) {
+                contentBox.innerHTML = '';
+                data.forEach(chat => {
+                    contentBox.innerHTML += `
+                        <div class="message user"><div class="message-content">${chat.message}</div></div>
+                        <div class="message bot">
+                            <img class="bot-icon" src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon">
+                            <div class="message-content">${chat.response}</div>
+                        </div>
+                    `;
+                });
+                contentBox.scrollTop = contentBox.scrollHeight;
+            }
+        }
+
+        function typeWriterEffect(element, text, speed = 20) {
+            let index = 0;
+            function type() {
+                if (index < text.length) {
+                    element.textContent += text[index];
+                    index++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            const contentBox = document.getElementById('content-box');
+
+            if (!userInput.trim()) return; // Jangan kirim pesan kosong
+
+            // Tambahkan pesan pengguna ke chat box
+            contentBox.innerHTML += `
+                <div class="message user">
+                    <div class="message-content">${userInput}</div>
+                </div>
+            `;
+
+            // Tambahkan placeholder untuk respons bot
+            // https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('message', 'bot');
+            botMessage.innerHTML = `
+                <img class="bot-icon" src="/static/OIP.jpg" alt="icon">
+                <div class="message-content"></div>
+            `;
+            const botText = botMessage.querySelector('.message-content');
+            contentBox.appendChild(botMessage);
+            contentBox.scrollTop = contentBox.scrollHeight;
+
+            // Ambil respons dari server
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: userInput })
+            });
+
+            const data = await response.json();
+
+            // Tampilkan respons dengan efek mengetik
+            typeWriterEffect(botText, data.response);
+            contentBox.scrollTop = contentBox.scrollHeight;
+
+            // Kosongkan input pengguna
+            document.getElementById('user-input').value = '';
+        }
+
+        // Event listener untuk menangkap tombol Enter
+        document.getElementById('user-input').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        window.onload = loadHistory;
+    </script>
+    <a href="{{ url_for('logout') }}" class="button logout">Logout</a>
+</body>
+</html>

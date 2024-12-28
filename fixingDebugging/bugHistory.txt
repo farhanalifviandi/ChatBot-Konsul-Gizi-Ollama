@@ -1,0 +1,363 @@
+app.pay
+
+
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+import requests
+import json
+import re
+import os
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_mysqldb import MySQL
+
+app = Flask(__name__)
+
+# Konfigurasi MySQL
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'root'  
+app.config['MYSQL_PASSWORD'] = ''  
+app.config['MYSQL_DB'] = 'konsul_gizi'
+app.secret_key = '771d82a8f322c86e604e7accf3bc952d396902320ab20d65'  
+
+mysql = MySQL(app)
+
+def load_chat_history():
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM chat_history WHERE user_id = %s", [session['user_id']])
+    chat_history = cur.fetchall()
+    cur.close()
+    return chat_history
+
+def save_chat_history(user_input, bot_response):
+    cur = mysql.connection.cursor()
+    cur.execute("INSERT INTO chat_history (user_id, user_message, bot_response) VALUES (%s, %s, %s)", 
+                (session['user_id'], user_input, bot_response))
+    mysql.connection.commit()
+    cur.close()
+
+# Halaman login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT * FROM users WHERE username = %s", [username])
+        user = cur.fetchone()
+        cur.close()
+
+        if user and check_password_hash(user[2], password):
+            session['user_id'] = user[0]
+            return redirect(url_for('home'))
+        else:
+            return render_template('login.html', message="Username atau password salah.")
+    
+    return render_template('login.html')
+
+# Halaman register
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+        cur = mysql.connection.cursor()
+        cur.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
+        mysql.connection.commit()
+        cur.close()
+
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+# Halaman logout
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('login'))
+
+# Halaman utama setelah login
+@app.route('/')
+def home():
+    if 'user_id' in session:
+        chat_history = load_chat_history()
+        return render_template('index.html', chat_history=chat_history)
+    return redirect(url_for('login'))
+
+# Fungsi untuk menangani respons dari API
+def generate_completion(prompt):
+    ollama_url = "http://localhost:11434/api/generate"
+    payload = {"model": "llama3.2", "prompt": prompt}
+    headers = {"Content-Type": "application/json"}
+
+    response = requests.post(ollama_url, json=payload, headers=headers, stream=True)
+    full_response = ""
+    for line in response.iter_lines():
+        if line:
+            try:
+                response_part = json.loads(line.decode('utf-8'))['response']
+                full_response += response_part
+            except json.JSONDecodeError:
+                full_response += " (Kesalahan parsing respons)"
+
+    return full_response
+
+# Endpoint untuk pertanyaan kesehatan gizi
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"response": "Pertanyaan kosong, silakan masukkan pertanyaan."}), 400
+
+    kesehatan_gizi_keywords = [
+        "gizi", "nutrisi", "makanan", "diet", "protein", "sayuran", "buah", "vitamin", "serat", 
+        "kesehatan", "mineral", "keseimbangan", "kalori", "karbohidrat", "lemak", "mikronutrien", 
+        "makronutrien", "olahraga", "sehat", "asupan", "metabolisme", "diabetes", "obesitas", 
+        "kolesterol", "tekanan darah", "suplemen", "hidrasi", "antioxidant", "prebiotik", 
+        "probiotik", "vegetarian", "vegan", "pola makan", "energi", "pengolahan makanan", 
+        "makanan organik", "makanan sehat", "menu diet", "perencanaan makanan", "makanan berimbang", 
+        "kebutuhan kalori", "indeks glikemik", "indeks massa tubuh", "BMI", "bahan makanan alami", 
+        "makanan rendah lemak", "makanan kaya protein", "porsi makan", "makanan rendah gula", 
+        "makanan berserat", "diet rendah karbohidrat", "makanan super", "makanan fungsional", 
+        "makanan rendah garam", "makanan fermentasi", "hipertensi", "anemia", "penuaan sehat", 
+        "kondisi medis", "kesehatan jantung", "diet untuk ibu hamil", "diet untuk anak-anak", 
+        "penurunan berat badan", "pengelolaan berat badan", "peningkatan massa otot", "diet seimbang", "sakit", "terimakasih", "informasinya"
+    ]
+    
+    if not any(keyword in user_input.lower() for keyword in kesehatan_gizi_keywords):
+        return jsonify({"response": "Saya hanya dapat menjawab pertanyaan terkait kesehatan gizi."}), 400
+
+    # Dapatkan respons dari generate_completion
+    bot_response = generate_completion(user_input)
+
+    # Bersihkan dan format respons
+    bot_response = re.sub(r'[^A-Za-z0-9\s.,-]', '', bot_response)
+    bot_response = re.sub(r'\s+', ' ', bot_response).strip()
+
+    # Simpan history chat
+    chat_history = load_chat_history()
+    chat_history.append({"role": "user", "content": user_input})
+    chat_history.append({"role": "bot", "content": bot_response})
+    save_chat_history(chat_history)
+
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
+
+
+
+
+--------------------------
+
+index.html
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Kesehatan Gizi</title>
+    <style>
+        #response {
+            font-family: 'Arial', sans-serif;
+            font-size: 16px;
+            white-space: pre-wrap;
+            width: 80%;
+            margin: 20px auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            height: 200px;
+            overflow-y: auto;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #05113b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #13254c;
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .title {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #0b1a3c;
+            border-radius: 15px;
+        }
+
+        .title h1 {
+            margin-left: 10px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .chat-box {
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #0b1a3c;
+            border-radius: 15px;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .button {
+            margin-left: 10px;
+            padding: 8px 20px;
+            border: none;
+            background-color: #4acfee;
+            color: black;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button.logout {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #ff4d4d;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .button.logout:hover {
+            background-color: #e63939;
+        }       
+
+        .response-box {
+            padding: 10px;
+            background-color: #8bc34a; /* Hijau menenangkan */
+            color: white;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .message {
+            display: flex;
+            margin: 10px 0;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .message.user .message-content {
+            background-color: #4acfee;
+            color: black;
+        }
+
+        .message.bot .message-content {
+            background-color: #8bc34a; /* Hijau menenangkan */
+            color: white;
+        }
+
+        .bot-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <img src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon" class="bot-icon">
+            <h1>Konsul Gizi</h1>
+        </div>
+        
+        <div class="chat-box" id="content-box">
+            <!-- Pesan akan ditambahkan -->
+        </div>
+
+        <div class="input-container" id="input-container">
+            <input type="text" id="user-input" placeholder="Tulis pertanyaan Anda seputar Kesehatan Gizi...">
+            <button class="button" onclick="sendMessage()">Kirim</button>
+        </div>
+
+        <!-- Response box -->
+        <div class="response-box" id="response-box" style="display: none;">
+            <strong>Response:</strong> <span id="response-text"></span>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            const contentBox = document.getElementById('content-box');
+            
+            // Kirim permintaan ke server Flask
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: userInput })
+            });
+            
+            // Ambil respon dari server
+            const data = await response.json();
+
+            // Tambahkan pesan pengguna ke tampilan
+            contentBox.innerHTML += `<div class="message user"><div class="message-content">${userInput}</div></div>`;
+
+            // Tambahkan pesan bot ke tampilan dengan warna 
+            contentBox.innerHTML += `<div class="message bot"><img class="bot-icon" src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon"><div class="message-content">${data.response}</div></div>`;
+
+            // Scroll ke bawah untuk menunjukkan pesan terbaru
+            contentBox.scrollTop = contentBox.scrollHeight;
+
+            // Kosongkan input setelah mengirim pesan
+            document.getElementById('user-input').value = '';
+        }
+    </script>
+    <a href="{{ url_for('logout') }}" class="button logout">Logout</a>
+
+
+</body>
+</html>

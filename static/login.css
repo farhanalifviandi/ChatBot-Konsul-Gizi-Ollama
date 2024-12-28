@@ -1,0 +1,88 @@
+body {
+    background: linear-gradient(135deg, #FFD700, #FF7F50, #FF6347); /* Gradasi kuning, oranye, dan merah tomat */
+    color: white;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: rgba(255, 255, 255, 0.8); /* Warna putih dengan transparansi */
+    /* background-image: url('your-leaf-image.png'); Ganti dengan path gambar daun Anda */
+    background-size: cover; /* Agar gambar menutupi seluruh container */
+    background-position: center; /* Posisi gambar di tengah */
+    border-radius: 10px;
+    padding: 20px;
+    width: 300px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.container h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #FF6347; /* Merah tomat untuk judul */
+}
+
+.container label {
+    font-size: 14px;
+    color: #333; /* Warna label agar terlihat jelas */
+}
+
+.container input {
+    width: 95%;
+    padding: 8px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 2px solid #FFD700; /* Warna kuning emas */
+    background: transparent; /* Transparan */
+    color: #333; /* Teks berwarna gelap */
+    font-size: 16px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Placeholder styling untuk memastikan teks placeholder terlihat */
+.container input::placeholder {
+    color: rgba(51, 51, 51, 0.7); /* Warna placeholder lebih gelap */
+    opacity: 1;
+}
+
+.container input:focus {
+    border-color: #FF6347; /* Warna merah tomat saat fokus */
+    box-shadow: 0 0 8px rgba(255, 99, 71, 0.5);
+    outline: none;
+}
+
+.container button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #FFD700, #FF7F50, #FF6347); /* Gradasi */
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.container button:hover {
+    background: linear-gradient(135deg, #FF6347, #FF7F50, #FFD700); /* Gradasi terbalik saat hover */
+    transform: scale(1.05);
+}
+
+.container p {
+    text-align: center;
+    margin-top: 15px;
+    color: #333;
+}
+
+.container a {
+    color: #FF6347; /* Merah tomat untuk tautan */
+    text-decoration: none;
+}
+
+.container a:hover {
+    text-decoration: underline;
+}

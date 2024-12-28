@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Kesehatan Gizi</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #05113b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #13254c;
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .title {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #0b1a3c;
+            border-radius: 15px;
+        }
+
+        .title h1 {
+            margin-left: 10px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .chat-box {
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+        }
+
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #0b1a3c;
+            border-radius: 15px;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .button {
+            margin-left: 10px;
+            padding: 8px 20px;
+            border: none;
+            background-color: #4acfee;
+            color: black;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .response-box {
+            padding: 10px;
+            background-color: #8bc34a;  /* Hijau yang menenangkan */
+            color: white;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .message {
+            display: flex;
+            margin: 10px 0;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .message.user .message-content {
+            background-color: #4acfee;
+            color: black;
+        }
+
+        .message.bot .message-content {
+            background-color: #1c3a60;
+            color: white;
+        }
+
+        .bot-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <img src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon" class="bot-icon">
+            <h1>Chatbot Kesehatan Gizi</h1>
+        </div>
+        
+        <div class="chat-box" id="content-box">
+            <!-- Pesan akan ditambahkan -->
+        </div>
+
+        <div class="input-container" id="input-container">
+            <input type="text" id="user-input" placeholder="Tulis pertanyaan Anda seputar Kesehatan Gizi...">
+            <button class="button" onclick="sendMessage()">Kirim</button>
+        </div>
+
+        <!-- Response box yang diubah agar berwarna hijau -->
+        <div class="response-box" id="response-box" style="display: none;">
+            <strong>Response:</strong> <span id="response-text"></span>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            const contentBox = document.getElementById('content-box');
+            
+            // Kirim permintaan ke server Flask
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: userInput })
+            });
+            
+            // Ambil respon dari server
+            const data = await response.json();
+
+            // Tambahkan pesan pengguna ke tampilan
+            contentBox.innerHTML += `<div class="message user"><div class="message-content">${userInput}</div></div>`;
+
+            // Tambahkan pesan bot ke tampilan dengan warna 
+            contentBox.innerHTML += `<div class="message bot"><img class="bot-icon" src="https://th.bing.com/th/id/OIP.lL1JPjgGMFj3QdCsbPz1_QHaHa?rs=1&pid=ImgDetMain" alt="icon"><div class="message-content" style="background-color: #8bc34a; color: white;">${data.response}</div></div>`;
+
+            // Scroll ke bawah untuk menunjukkan pesan terbaru
+            contentBox.scrollTop = contentBox.scrollHeight;
+
+            // Kosongkan input setelah mengirim pesan
+            document.getElementById('user-input').value = '';
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------
+FIXING 1
+
+
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify, render_template
+import requests
+
+app = Flask(__name__)
+
+# API endpoint ke Ollama Llama3.1
+OLLAMA_API_URL = "http://localhost:11434/api/generate"
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("question")
+    if not user_input:
+        return jsonify({"error": "Pertanyaan tidak boleh kosong"}), 400
+
+    # Mengirim permintaan ke API Ollama
+    payload = {
+        "model": "llama3.1",
+        "prompt": user_input
+    }
+    try:
+        response = requests.post(OLLAMA_API_URL, json=payload, headers={"Content-Type": "application/json"})
+        response_data = response.json()
+
+        # Mengambil respons dari API
+        bot_response = response_data.get("response", "Maaf, saya tidak dapat memberikan jawaban saat ini.")
+        return jsonify({"response": bot_response})
+
+    except Exception as e:
+        return jsonify({"error": f"Terjadi kesalahan: {str(e)}"}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------------
+
+
+
+
+
+
+

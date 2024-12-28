@@ -1,0 +1,55 @@
+<!-- <!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Chat</title>
+    <style>
+        body { background-color: #05113b; color: white; font-family: Arial, sans-serif; padding: 20px; }
+        .chat { margin-bottom: 20px; padding: 10px; background-color: #13254c; border-radius: 5px; }
+        .timestamp { font-size: 12px; color: #888; }
+    </style>
+</head>
+<body>
+    <h1>Riwayat Chat</h1>
+    <div>
+        <a href="/">Kembali ke Beranda</a>
+    </div>
+    <hr>
+    {% for chat in chats %}
+        <div class="chat">
+            <p><strong>Pertanyaan:</strong> {{ chat[0] }}</p>
+            <p><strong>Jawaban:</strong> {{ chat[1] }}</p>
+            <p class="timestamp">{{ chat[2] }}</p>
+        </div>
+    {% else %}
+        <p>Belum ada riwayat chat.</p>
+    {% endfor %}
+
+    <hr>
+    <h2>Tambah Chat Baru</h2>
+    <form id="chatForm">
+        <label for="question">Pertanyaan:</label><br>
+        <textarea id="question" name="question" rows="4" cols="50" required></textarea><br>
+        <button type="submit">Kirim</button>
+    </form>
+    
+    <script>
+        document.getElementById('chatForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const question = document.getElementById('question').value;
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question })
+            });
+            const data = await response.json();
+            if (data.response) {
+                alert("Jawaban: " + data.response);
+                location.reload();
+            }
+        });
+    </script>
+    
+</body>
+</html> -->
